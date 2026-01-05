@@ -35,7 +35,7 @@ A custom node for [ComfyUI](https://github.com/comfyanonymous/ComfyUI) that allo
 
 1. Open ComfyUI.
 2. Double-click to search and add the node **SimpleDisplayNode**.
-   - Located under the category `DLWW/Debug`.
+   - Located under the category `DLWW/Utils`.
 3. Connect any output from another node to the `any_input` slot.
 4. Queue the prompt.
 5. The node will display text details about the data and a visual preview if applicable.
