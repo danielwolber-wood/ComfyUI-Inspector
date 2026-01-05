@@ -5,7 +5,7 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "SimpleDisplayNode": "Simple Display"
+    "SimpleDisplayNode": "Universal Inspector (Debug)"
 }
 
 WEB_DIRECTORY = "./js"
