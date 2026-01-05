@@ -18,7 +18,15 @@ app.registerExtension({
 
             const onExecuted = nodeType.prototype.onExecuted;
             nodeType.prototype.onExecuted = function (message) {
-                onExecuted?.apply(this, arguments);
+                // Hide images from the default onExecuted to prevent default preview widget
+                const args = [...arguments];
+                if (message && message.images) {
+                    const newMessage = { ...message };
+                    delete newMessage.images;
+                    args[0] = newMessage;
+                }
+                
+                onExecuted?.apply(this, args);
 
                 // 1. Handle Text (Same as before)
                 if (message && message.text) {
