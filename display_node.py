@@ -23,7 +23,7 @@ class SimpleDisplayNode:
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("text_info",)
     FUNCTION = "analyze_and_display"
-    CATEGORY = "DLWW/Debug"
+    CATEGORY = "DLWW/Utils"
     OUTPUT_NODE = True
 
     def analyze_and_display(self, any_input):
