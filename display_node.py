@@ -67,6 +67,9 @@ class SimpleDisplayNode:
                     img = Image.fromarray(img_np[i])
                 images.append(img)
 
+            if not images:
+                return None
+
             # Generate a random filename in the temp folder
             output_dir = folder_paths.get_temp_directory()
             filename = f"debug_preview_{random.randint(100000, 999999)}.webp"
