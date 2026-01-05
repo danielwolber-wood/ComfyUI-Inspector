@@ -4,11 +4,16 @@ from PIL import Image
 import folder_paths
 import os
 import random
-
+import json
 
 class SimpleDisplayNode:
+    """
+    A ComfyUI node that inspects any input and displays its details (metadata, shape, etc.)
+    and a preview if it is an image tensor.
+    """
+    
     @classmethod
-    def INPUT_TYPES(s):
+    def INPUT_TYPES(cls):
         return {
             "required": {
                 "any_input": ("*",),
@@ -31,6 +36,7 @@ class SimpleDisplayNode:
         # 3. Check if it is an image/video and save a preview
         if isinstance(any_input, torch.Tensor):
             # Check if it looks like an image [B, H, W, C]
+            # Heuristic: 4 dims, last dim is 1, 3, or 4 (channels)
             if any_input.ndim == 4 and any_input.shape[-1] in [1, 3, 4]:
                 preview_filename = self._save_preview(any_input)
                 if preview_filename:
@@ -43,7 +49,8 @@ class SimpleDisplayNode:
 
         return {"ui": ui_payload, "result": (text_info,)}
 
-    def _save_preview(self, tensor):
+    @staticmethod
+    def _save_preview(tensor):
         try:
             # Convert Tensor (0.0-1.0) to Numpy (0-255 uint8)
             # Clip values to ensure valid color range
@@ -53,7 +60,12 @@ class SimpleDisplayNode:
             # Convert to PIL Images
             images = []
             for i in range(img_np.shape[0]):
-                images.append(Image.fromarray(img_np[i]))
+                # Handle 1-channel (grayscale) images
+                if img_np.shape[-1] == 1:
+                    img = Image.fromarray(img_np[i].squeeze(-1), mode="L")
+                else:
+                    img = Image.fromarray(img_np[i])
+                images.append(img)
 
             # Generate a random filename in the temp folder
             output_dir = folder_paths.get_temp_directory()
@@ -75,13 +87,38 @@ class SimpleDisplayNode:
 
             return filename
         except Exception as e:
-            print(f"Failed to save preview: {e}")
+            print(f"SimpleDisplayNode: Failed to save preview: {e}")
             return None
 
-    def _get_details(self, data):
-        # (Keep your existing _get_details logic from the previous step here)
-        # Just copy/paste the method from our previous conversation.
-        if isinstance(data, torch.Tensor):
-            return f"Tensor Shape: {list(data.shape)}\nDtype: {data.dtype}\nRange: {data.min():.2f} - {data.max():.2f}"
-        else:
-            return str(data)
+    @staticmethod
+    def _get_details(data):
+        try:
+            if isinstance(data, torch.Tensor):
+                info = (
+                    f"Type: torch.Tensor\n"
+                    f"Shape: {list(data.shape)}\n"
+                    f"Dtype: {data.dtype}\n"
+                    f"Device: {data.device}\n"
+                    f"Range: {data.min():.2f} to {data.max():.2f}\n"
+                    f"Mean: {data.mean():.2f}, Std: {data.std():.2f}"
+                )
+                return info
+            
+            elif isinstance(data, (int, float, bool, str)):
+                return f"Type: {type(data).__name__}\nValue: {data}"
+            
+            elif isinstance(data, list):
+                return f"Type: List\nLength: {len(data)}\nSample: {str(data)[:200]}..."
+            
+            elif isinstance(data, dict):
+                return f"Type: Dict\nKeys: {list(data.keys())}\nSample: {str(data)[:200]}..."
+            
+            elif data is None:
+                return "Type: NoneType\nValue: None"
+            
+            else:
+                # Fallback for other objects
+                return f"Type: {type(data).__name__}\nString Rep: {str(data)[:500]}"
+                
+        except Exception as e:
+            return f"Error analyzing data: {e}"
