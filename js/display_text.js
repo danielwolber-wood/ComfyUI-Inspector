@@ -7,6 +7,15 @@ app.registerExtension({
     async beforeRegisterNodeDef(nodeType, nodeData, app) {
         if (nodeData.name === "SimpleDisplayNode") {
 
+            const onNodeCreated = nodeType.prototype.onNodeCreated;
+            nodeType.prototype.onNodeCreated = function () {
+                onNodeCreated?.apply(this, arguments);
+
+                const w = ComfyWidgets["STRING"](this, "displayed_text", ["STRING", { multiline: true }], app).widget;
+                w.inputEl.readOnly = true;
+                w.inputEl.style.opacity = 0.6;
+            };
+
             const onExecuted = nodeType.prototype.onExecuted;
             nodeType.prototype.onExecuted = function (message) {
                 onExecuted?.apply(this, arguments);
