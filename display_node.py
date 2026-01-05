@@ -6,6 +6,10 @@ import os
 import random
 import json
 
+class AnyType(str):
+    def __ne__(self, __value: object) -> bool:
+        return False
+
 class SimpleDisplayNode:
     """
     A ComfyUI node that inspects any input and displays its details (metadata, shape, etc.)
@@ -16,7 +20,7 @@ class SimpleDisplayNode:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "any_input": ("*",),
+                "any_input": (AnyType("*"),),
             }
         }
 
